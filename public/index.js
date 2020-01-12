@@ -160,3 +160,152 @@ const actors = [{
 console.log(cars);
 console.log(rentals);
 console.log(actors);
+
+//STEP 1
+function rentalPrice(pricePerDay, pricePerKm, distance, days)
+{
+  return (pricePerDay*days)+(pricePerKm*distance);
+}
+
+function diffDate(date1, date2)
+{
+  var time_diff = date2.getTime() - date1.getTime();
+  var days_Diff = time_diff / (1000 * 3600 * 24);
+  return days_Diff;
+}
+
+function parseDate(input) {
+  var parts = input.match(/(\d+)/g);
+  // new Date(year, month [, date [, hours[, minutes[, seconds[, ms]]]]])
+  return new Date(parts[0], parts[1]-1, parts[2]); // months are 0-based
+}
+
+function displayRentalPrice()
+{
+  console.log("[");
+  for (var car of cars)
+  {
+    for (var rental of rentals)
+    {
+      if(car.id == rental.carId)
+      {
+        var price = rentalPrice(car.pricePerDay, car.pricePerKm, rental.distance, diffDate(parseDate(rental.pickupDate), parseDate(rental.returnDate)));
+        console.log("{\nid: "+rental.id+ ",\nprice: "+price+"\n},");
+      }
+    }
+  }
+      console.log("]");
+}
+
+displayRentalPrice()
+
+//STEP 2:
+function decreasingPrice(rentalDays, price)
+{
+  if(rentalDays > 1)
+      price = price * 0.9;
+  if(rentalDays > 4)
+      price = price * 0.7;
+  if(rentalDays > 10)
+      price = price * 0.5;
+  return price;
+}
+
+function displayRentalPriceWithPromotion()
+{
+  for (var car of cars)
+  {
+    for (var rental of rentals)
+    {
+      if(car.id == rental.carId)
+      {
+        var rentalDays = diffDate(parseDate(rental.pickupDate), parseDate(rental.returnDate));
+        var price = rentalPrice(car.pricePerDay, car.pricePerKm, rental.distance, rentalDays);
+        price = decreasingPrice(rentalDays, price);
+        rental.price = price;
+      }
+    }
+  }
+  console.log(rentals);
+}
+displayRentalPriceWithPromotion()
+
+//STEP 3:
+function commission()
+{  
+  var commission = 0;
+  for(var rental of rentals)
+  {
+      if(rental.price > 0)
+      {
+        commission = rentalPrice*0.3;
+        rental.insurance = commission * 0.5;
+        rental.treasury = 1;
+        rental.virtuo = commission - rental.insurance - rental.treasury;
+      }
+    }    
+ }
+
+commission()
+console.log(rentals)
+
+//STEP 4:
+function rentalPriceWithDeductibleOption(pricePerDay, pricePerKm, distance, days, deductibleReduction)
+{
+  if(deductibleReduction === true)
+      return ((pricePerDay+4)*days)+(pricePerKm*distance);
+  else
+    return (pricePerDay*days)+(pricePerKm*distance);
+}
+
+function displayNewRentalPrice()
+{
+  for (var car of cars)
+  {
+    for (var rental of rentals)
+    {
+      if(car.id == rental.carId)
+      {
+        var rentalDays = diffDate(parseDate(rental.pickupDate), parseDate(rental.returnDate));
+        var price = rentalPriceWithDeductibleOption(car.pricePerDay, car.pricePerKm, rental.distance, rentalDays, rental.options.deductibleReduction);
+        price = decreasingPrice(rentalDays, price);
+        rental.price = price;
+      }
+    }
+  }
+  commission();
+  console.log(rentals);
+}
+
+displayNewRentalPrice()
+
+//STEP 5:
+function payActors()
+{ 
+ for(var actor of actors)
+  {
+    for(var rental of rentals)
+    {
+      if(actor.rentalId == rental.id)
+       {
+          for(var pay of actor.payment)
+          {
+           if(pay.who == 'driver') 
+             pay.amount = rental.price;
+           if(pay.who == 'partner') 
+             pay.amount = rental.price*0.7;
+           if(pay.who == 'insurance') 
+             pay.amount = rental.insurance;
+           if(pay.who == 'treasury') 
+             pay.amount = rental.treasury;       
+           if(pay.who == 'virtuo') 
+             pay.amount = rental.virtuo;
+          }     
+           console.log(actors);
+       }
+    }
+  }
+}
+
+payActors();
+
